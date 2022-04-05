@@ -1,4 +1,6 @@
-FROM golang:1.18
+# builder
+
+FROM golang:1.18 as builder
 
 WORKDIR /usr/src/app
 
@@ -9,4 +11,13 @@ RUN go mod download && go mod verify
 COPY . .
 RUN go build -v -o /usr/local/bin/app ./...
 
-CMD ["app"]
+# Runner
+
+FROM scratch AS runner
+
+WORKDIR /
+
+# Copy from builder the final binary
+COPY --from=builder /usr/local/bin/app /main
+
+ENTRYPOINT ["/main"]
